@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from scipy import stats
 import json
 
 pd.set_option("display.max_columns", None)
@@ -22,6 +23,16 @@ class Preprocessing:
             dict_json = json.load(file)
 
         return pd.DataFrame.from_dict(dict_json)
+
+    def price_range(self, df: pd.DataFrame) -> None:
+        min_price = 90000
+        max_price = 1000000
+
+        small_prices = df[df["Price"] < min_price]
+        high_prices = df[df["Price"] > max_price]
+
+        df.drop(small_prices.index, inplace=True)
+        df.drop(high_prices.index, inplace=True)
 
     def delete_columns(self, df: pd.DataFrame) -> None:
         # First, remove ID and URL
