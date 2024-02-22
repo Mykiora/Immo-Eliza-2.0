@@ -4,6 +4,8 @@ import json
 import pgeocode
 from typing import Tuple
 
+pd.set_option("display.max_columns", None)
+
 
 class Preprocessing:
     def load_json(self, json_file) -> pd.DataFrame:
@@ -62,10 +64,10 @@ class Preprocessing:
 
         for column in numerical_columns:
             if df[column].isnull().any():
-                df = df[column].fillna(df[column].median())
+                df[column] = df[column].fillna(df[column].median())
 
         for column in categorical_columns:
             if df[column].isnull().any():
-                df = df[column].fillna(df[column].mode()[0])
+                df[column] = df[column].fillna(df[column].mode()[0])
 
         return df
