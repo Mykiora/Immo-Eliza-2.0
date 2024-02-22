@@ -104,7 +104,22 @@ class Preprocessing:
 
         return df
 
-    def one_hot_encoding(df: pd.DataFrame) -> pd.DataFrame:
+    def fit_encoder(self, df: pd.DataFrame) -> None:
         encoder = OneHotEncoder(
-            drop="first", sparse_output=False, handle_unknown="ignore"
+            drop="first",
+            sparse_output=False,
+            handle_unknown="ignore",
         )
+
+        encoder.fit(df.drop("Price", axis=1))
+
+        encoder_file = open("encoder/encoder.obj", "wb")
+        pickle.dump(encoder, encoder_file)
+        encoder_file.close()
+
+    def one_hot_encoding(self, df: pd.DataFrame) -> pd.DataFrame:
+        encoder_file = open("encoder/encoder.obj", "rb")
+        encoder = pickle.load(encoder_file)
+
+        encoded_df = pd.DataFrame(encoder.transform(df))
+        return encoded_df
