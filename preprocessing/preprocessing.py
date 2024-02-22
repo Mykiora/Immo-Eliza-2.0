@@ -36,9 +36,27 @@ class Preprocessing:
 
         return df
 
-    def get_geo_coordinates(df: pd.DataFrame) -> Tuple[int]:
+    def get_geo_coordinates(self, df: pd.DataFrame) -> pd.DataFrame:
         nomi = pgeocode.Nominatim("be")
-        print(nomi.query_postal_code("4000"))
+
+        # Create empty lists to store latitude and longitude values
+        latitudes = []
+        longitudes = []
+
+        # Iterate over each row in the DataFrame
+        for index, row in df.iterrows():
+            postal_code = row["PostalCode"]
+            location_info = nomi.query_postal_code(postal_code)
+
+            # Append latitude and longitude values to the lists
+            latitudes.append(location_info.latitude)
+            longitudes.append(location_info.longitude)
+
+        # Add latitude and longitude columns to the DataFrame
+        df["latitude"] = latitudes
+        df["longitude"] = longitudes
+
+        return df
 
     def delete_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         # First, remove ID and URL
