@@ -3,6 +3,8 @@ import numpy as np
 import json
 import pgeocode
 from typing import Tuple
+from sklearn.preprocessing import OneHotEncoder
+import pickle
 
 pd.set_option("display.max_columns", None)
 
@@ -71,8 +73,14 @@ class Preprocessing:
             if missing_values_percent > 50:
                 df = df.drop(columns=column)
 
-        # Finally, delete columns that do not correlate with the price
+        # Delete columns that do not correlate with the price
         df = df.drop(columns=["TypeOfProperty", "PostalCode", "TypeOfSale"])
+
+        return df
+
+    def delete_missing_geo_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        missing_geo_data = df[df["latitude"].isna() | df["longitude"].isna()]
+        df = df.drop(missing_geo_data.index)
 
         return df
 
@@ -89,3 +97,14 @@ class Preprocessing:
                 df[column] = df[column].fillna(df[column].mode()[0])
 
         return df
+
+    def bool_to_number(self, df: pd.DataFrame) -> pd.DataFrame:
+        bool_columns = df.select_dtypes(include="bool").columns
+        df[bool_columns] = df[bool_columns].astype(int)
+
+        return df
+
+    def one_hot_encoding(df: pd.DataFrame) -> pd.DataFrame:
+        encoder = OneHotEncoder(
+            drop="first", sparse_output=False, handle_unknown="ignore"
+        )
