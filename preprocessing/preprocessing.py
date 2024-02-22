@@ -38,3 +38,15 @@ class Preprocessing:
 
         # Finally, delete columns that do not correlate with the price
         df.drop(columns=["TypeOfProperty", "PostalCode", "TypeOfSale"], inplace=True)
+
+    def handle_missing_values(self, df: pd.DataFrame):
+        numerical_columns = df.select_dtypes(include=["int64", "float64"])
+        categorical_columns = df.select_dtypes(include="object")
+
+        for column in numerical_columns:
+            if df[column].isnull().any():
+                df[column].fillna(df[column].mean(), inplace=True)
+
+        for column in categorical_columns:
+            if df[column].isnull().any():
+                df[column].fillna(df[column].mode()[0], inplace=True)
