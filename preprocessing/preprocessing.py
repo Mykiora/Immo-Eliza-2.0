@@ -1,10 +1,8 @@
 import pandas as pd
 import numpy as np
-from scipy import stats
 import json
-
-pd.set_option("display.max_columns", None)
-pd.set_option("display.max_rows", None)
+import pgeocode
+from typing import Tuple
 
 
 class Preprocessing:
@@ -24,19 +22,25 @@ class Preprocessing:
 
         return pd.DataFrame.from_dict(dict_json)
 
-    def price_range(self, df: pd.DataFrame) -> None:
+    def price_range(self, df: pd.DataFrame) -> pd.DataFrame:
         min_price = 90000
         max_price = 1000000
 
         small_prices = df[df["Price"] < min_price]
         high_prices = df[df["Price"] > max_price]
 
-        df.drop(small_prices.index, inplace=True)
-        df.drop(high_prices.index, inplace=True)
+        df = df.drop(small_prices.index)
+        df = df.drop(high_prices.index)
 
-    def delete_columns(self, df: pd.DataFrame) -> None:
+        return df
+
+    def get_geo_coordinates(df: pd.DataFrame) -> Tuple[int]:
+        nomi = pgeocode.Nominatim("be")
+        print(nomi.query_postal_code("4000"))
+
+    def delete_columns(self, df: pd.DataFrame) -> pd.DataFrame:
         # First, remove ID and URL
-        df.drop(columns=["Url", "PropertyId"], inplace=True)
+        df = df.drop(columns=["Url", "PropertyId"])
 
         # Then, remove columns with 50+ % missing values
         for column in df.columns:
@@ -45,19 +49,23 @@ class Preprocessing:
             missing_values_percent = (missing_values / total_values) * 100
 
             if missing_values_percent > 50:
-                df.drop(columns=column, inplace=True)
+                df = df.drop(columns=column)
 
         # Finally, delete columns that do not correlate with the price
-        df.drop(columns=["TypeOfProperty", "PostalCode", "TypeOfSale"], inplace=True)
+        df = df.drop(columns=["TypeOfProperty", "PostalCode", "TypeOfSale"])
 
-    def handle_missing_values(self, df: pd.DataFrame):
+        return df
+
+    def handle_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
         numerical_columns = df.select_dtypes(include=["int64", "float64"])
         categorical_columns = df.select_dtypes(include="object")
 
         for column in numerical_columns:
             if df[column].isnull().any():
-                df[column].fillna(df[column].mean(), inplace=True)
+                df = df[column].fillna(df[column].median())
 
         for column in categorical_columns:
             if df[column].isnull().any():
-                df[column].fillna(df[column].mode()[0], inplace=True)
+                df = df[column].fillna(df[column].mode()[0])
+
+        return df
