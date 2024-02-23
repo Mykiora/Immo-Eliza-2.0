@@ -18,8 +18,13 @@ y_train = train["Price"]
 X_test = test.drop("Price", axis=1)
 y_test = test["Price"]
 
-# Predict
+# Model instance
 xgb = Model()
+
+# Train (optional)
+# xgb.train(X_train, y_train)
+
+# Predict
 predictions = xgb.predict(X_test)
 
 # Test model
