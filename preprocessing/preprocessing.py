@@ -37,16 +37,7 @@ class Preprocessing:
         return df
 
     def price_range(self, df: pd.DataFrame) -> pd.DataFrame:
-        min_price = 90000
-        max_price = 1000000
-
-        small_prices = df[df["Price"] < min_price]
-        high_prices = df[df["Price"] > max_price]
-
-        df = df.drop(small_prices.index)
-        df = df.drop(high_prices.index)
-
-        return df
+        return df[(df["Price"] >= 90000) & (df["Price"] <= 1000000)]
 
     def get_geo_coordinates(self, df: pd.DataFrame) -> pd.DataFrame:
         nomi = pgeocode.Nominatim("be")
