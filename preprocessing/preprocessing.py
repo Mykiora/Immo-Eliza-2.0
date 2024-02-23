@@ -77,9 +77,6 @@ class Preprocessing:
             if missing_values_percent > 50:
                 df = df.drop(columns=column)
 
-        # Delete columns that do not correlate with the price
-        # df = df.drop(columns=["TypeOfProperty", "PostalCode", "TypeOfSale"])
-
         return df
 
     def delete_missing_geo_data(self, df: pd.DataFrame) -> pd.DataFrame:
