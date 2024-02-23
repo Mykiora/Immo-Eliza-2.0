@@ -1,6 +1,5 @@
 from preprocessing.preprocessing import Preprocessing
 from model.model import Model
-import pickle
 
 prep = Preprocessing()
 
