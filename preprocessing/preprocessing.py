@@ -121,7 +121,9 @@ class Preprocessing:
             handle_unknown="ignore",
         )
 
-        encoder.fit(df.drop("Price", axis=1))
+        categorical_columns = df.select_dtypes(include="object")
+
+        encoder.fit(categorical_columns)
 
         encoder_file = open("encoder/encoder.obj", "wb")
         pickle.dump(encoder, encoder_file)
@@ -130,6 +132,17 @@ class Preprocessing:
     def one_hot_encoding(self, df: pd.DataFrame) -> pd.DataFrame:
         encoder_file = open("encoder/encoder.obj", "rb")
         encoder = pickle.load(encoder_file)
+        categorical_columns = df.select_dtypes(include="object").reset_index(drop=True)
 
-        encoded_df = pd.DataFrame(encoder.transform(df))
+        encoded_categorical_columns = pd.DataFrame(
+            encoder.transform(categorical_columns)
+        )
+
+        # cv stands for categorical variable
+        df_without_cv = df.drop(columns=categorical_columns.columns).reset_index(
+            drop=True
+        )
+
+        encoded_df = pd.concat([df_without_cv, encoded_categorical_columns], axis=1)
+
         return encoded_df
