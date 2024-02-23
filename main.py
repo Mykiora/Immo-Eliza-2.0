@@ -8,10 +8,6 @@ prep = Preprocessing()
 train = prep.load_json("data/train.json")
 test = prep.load_json("data/test.json")
 
-# Filtering price range
-train = prep.price_range(train)
-test = prep.price_range(test)
-
 # Preprocessing
 train = prep.preprocess(train)
 test = prep.preprocess(test)

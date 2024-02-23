@@ -27,6 +27,7 @@ class Preprocessing:
         return pd.DataFrame.from_dict(dict_json)
 
     def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = self.price_range(df)
         df = self.handle_missing_values(df)
         df = self.get_geo_coordinates(df)
         df = self.delete_columns(df)
