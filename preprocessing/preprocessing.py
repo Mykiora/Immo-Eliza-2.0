@@ -26,6 +26,16 @@ class Preprocessing:
 
         return pd.DataFrame.from_dict(dict_json)
 
+    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
+        df = self.handle_missing_values(df)
+        df = self.get_geo_coordinates(df)
+        df = self.delete_columns(df)
+        df = self.delete_missing_geo_data(df)
+        df = self.bool_to_number(df)
+        df = self.one_hot_encoding(df)
+
+        return df
+
     def price_range(self, df: pd.DataFrame) -> pd.DataFrame:
         min_price = 90000
         max_price = 1000000

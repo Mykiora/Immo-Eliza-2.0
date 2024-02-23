@@ -18,10 +18,8 @@ X_test = test.drop("Price", axis=1)
 y_test = test["Price"]
 
 # Preprocessing
-X_train = prep.handle_missing_values(X_train)
-X_train = prep.get_geo_coordinates(X_train)
-X_train = prep.delete_columns(X_train)
-X_train = prep.delete_missing_geo_data(X_train)
-X_train = prep.bool_to_number(X_train)
-X_train = prep.one_hot_encoding(X_train)
-print(X_train.head(3))
+X_train = prep.preprocess(X_train)
+X_test = prep.preprocess(X_test)
+
+print(X_train.shape)
+print(X_test.shape)
