@@ -19,30 +19,62 @@ class Preprocessing:
         str json_file : Absolute/Relative path of the json file.
 
         RETURN
-        Pandas.DataFrame object
+        DataFrame object
         """
         with open(json_file) as file:
             dict_json = json.load(file)
 
         return pd.DataFrame.from_dict(dict_json)
 
-    def preprocess(self, df: pd.DataFrame, fit=False) -> pd.DataFrame:
+    def preprocess(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        DESCRIPTION
+        Run a series of functions that will prepare the data for modelling.
+        That is, after the dataframe passes in this function, you can train
+        a model with it.
+
+        PARAMETERS
+        pd.DataFrame df : The DataFrame that is going to be preprocessed.
+
+        RETURN
+        DataFrame object
+        """
         df = self.price_range(df)
         df = self.handle_missing_values(df)
         df = self.get_geo_coordinates(df)
         df = self.delete_columns(df)
         df = self.delete_missing_geo_data(df)
         df = self.bool_to_number(df)
-        if fit:
-            self.fit_encoder(df)
         df = self.one_hot_encoding(df)
 
         return df
 
     def price_range(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        DESCRIPTION
+        Get rid of outliers and input errors like houses that cost 1€, ...
+        by restricting the price range.
+
+        PARAMETERS
+        pd.DataFrame df : The DataFrame in which the prices will be restricted
+
+        RETURN
+        DataFrame object
+        """
         return df[(df["Price"] >= 90000) & (df["Price"] <= 1000000)]
 
     def get_geo_coordinates(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        DESCRIPTION
+        Iterate through the postal codes in the dataframe to extract "latitude"
+        and "longitude" features.
+
+        PARAMETERS
+        pd.DataFrame df : The DataFrame in which the features will be extracted
+
+        RETURN
+        DataFrame object
+        """
         nomi = pgeocode.Nominatim("be")
 
         # Create empty lists to store latitude and longitude values
@@ -65,6 +97,17 @@ class Preprocessing:
         return df
 
     def delete_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        DESCRIPTION
+        Delete irrelevant columns like IDs, URLs, columns with an excessive amount
+        of null values.
+
+        PARAMETERS
+        pd.DataFrame df : The DataFrame in which the columns will be deleted
+
+        RETURN
+        DataFrame object
+        """
         # First, remove ID and URL
         df = df.drop(columns=["Url", "PropertyId"])
 
@@ -80,12 +123,34 @@ class Preprocessing:
         return df
 
     def delete_missing_geo_data(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        DESCRIPTION
+        There are instances of incorrect postal codes that lead to pgeocode returning None
+        for latitude and longitude features. This functions removes these rows.
+
+        PARAMETERS
+        pd.DataFrame df : The DataFrame in which the rows will be dropped.
+
+        RETURN
+        DataFrame object
+        """
         missing_geo_data = df[df["latitude"].isna() | df["longitude"].isna()]
         df = df.drop(missing_geo_data.index)
 
         return df
 
     def handle_missing_values(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        DESCRIPTION
+        Impute numerical columns' null values with the median and
+        the the categorical columns' with the mode.
+
+        PARAMETERS
+        pd.DataFrame df : The DataFrame to impute.
+
+        RETURN
+        DataFrame object
+        """
         numerical_columns = df.select_dtypes(include=["int64", "float64"])
         categorical_columns = df.select_dtypes(include="object")
 
@@ -100,12 +165,34 @@ class Preprocessing:
         return df
 
     def bool_to_number(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        DESCRIPTION
+        Turns all the "True" and "False" to 1 and 0s.
+
+        PARAMETERS
+        pd.DataFrame : The DataFrame in which booleans values will be converted.
+
+        RETURN
+        DataFrame object
+        """
         bool_columns = df.select_dtypes(include="bool").columns
         df[bool_columns] = df[bool_columns].astype(int)
 
         return df
 
     def fit_encoder(self, df: pd.DataFrame) -> None:
+        """
+        DESCRIPTION
+        Fits a OneHotEncoder with the categorical column of a DataFrame, so the test
+        and train sets can be transformed by the same encoder. The encoder is then
+        serialized and saved into a file with pickle.
+
+        PARAMETERS
+        pd.DataFrame df : The DataFrame you want to fit the OneHotEncoder with.
+
+        RETURN
+        None
+        """
         encoder = OneHotEncoder(
             drop="first",
             sparse_output=False,
@@ -121,6 +208,17 @@ class Preprocessing:
         encoder_file.close()
 
     def one_hot_encoding(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        DESCRIPTION
+        One Hot Encode a DataFrame's categorical columns, using a previously
+        fitted encoder.
+
+        PARAMETERS
+        pd.DataFrame df : DataFrame, categorical columns of which you want to encode.
+
+        RETURN
+        DataFrame object
+        """
         encoder_file = open("encoder/encoder.obj", "rb")
         encoder = pickle.load(encoder_file)
         categorical_columns = df.select_dtypes(include="object").reset_index(drop=True)
