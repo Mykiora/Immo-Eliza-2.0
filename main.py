@@ -1,34 +1,39 @@
-from utils.preprocessing import Preprocessing
+from utils.pandas_preprocessing import PandasPreprocessor
 from utils.model import Model
+from utils.sklearn_preprocessing import SklearnPreprocessor
+import pandas as pd
+import pickle
 
-prep = Preprocessing()
+# Preprocessors instances
+prep_pd = PandasPreprocessor()
+prep_sklearn = SklearnPreprocessor()
 
 # Load data
-train = prep.load_json("data/train.json")
-test = prep.load_json("data/test.json")
+# train, test = prep_pd.load_json("data/train.json"), prep_pd.load_json("data/test.json")
+with open("utils/train_pandas_prep_df.obj", "rb") as file:
+    train = pickle.load(file)
 
-# Preprocessing
-train = prep.preprocess(train)
-test = prep.preprocess(test)
+with open("utils/test_pandas_prep_df.obj", "rb") as file:
+    test = pickle.load(file)
+
+# Preprocessing - first part (with pandas)
+"""print("Preprocessing of the train set with pandas begins...")
+train = prep_pd.preprocess(train)
+print("I'm done with the train set !")
+print("Now moving to the test set...")
+test = prep_pd.preprocess(test)
+print("Done !")"""
 
 # Split features and target variables
-X_train = train.drop("Price", axis=1)
-y_train = train["Price"]
+X_train, y_train = train.drop("Price", axis=1), train["Price"]
+X_test, y_test = test.drop("Price", axis=1), test["Price"]
 
-X_test = test.drop("Price", axis=1)
-y_test = test["Price"]
+# Preprocessing - second part (sklearn)
+# Fit ↓↓↓ is optional
+prep_sklearn.fit_encoder(X_train)
+X_train_preprocessed = prep_sklearn.apply_encoding(X_train)
+X_test_preprocessed = prep_sklearn.apply_encoding(X_test)
 
-# Model instance
-xgb = Model()
-
-# Train (optional)
-# xgb.train(X_train, y_train)
-
-# Predict
-predictions = xgb.predict(X_test)
-
-# Test model
-xgb.test(y_test, predictions)
-
-# Save result
-# xgb.save_results(y_test, predictions)
+# Test Model
+model = Model()
+model.test(X_train_preprocessed, y_train, X_test_preprocessed, y_test)
