@@ -46,7 +46,7 @@ class PandasPreprocessor:
     def remove_outliers(self, df: pd.DataFrame) -> pd.DataFrame:
         """
         DESCRIPTION
-        Remove outliers/input errors with zscore and quantile.
+        Remove outliers/input errors with zscore.
 
         PARAMETERS
         pd.DataFrame df : The DataFrame in which you want to convert the booleans.
