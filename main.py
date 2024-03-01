@@ -1,5 +1,5 @@
-from preprocessing.preprocessing import Preprocessing
-from model.model import Model
+from utils.preprocessing import Preprocessing
+from utils.model import Model
 
 prep = Preprocessing()
 
